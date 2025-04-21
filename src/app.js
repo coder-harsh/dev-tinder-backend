@@ -1,6 +1,16 @@
 const express = require("express");
 const app = express();
 app.get("/user", (req, res) => {
+    console.log(req.query)
+    res.send(
+        {
+            firstName: "Harsh",
+            lastName: "Kumar"
+        }
+    )
+})
+app.get("/user/:id", (req, res) => {
+    console.log(req.params.id)
     res.send(
         {
             firstName: "Harsh",
