@@ -49,7 +49,7 @@ app.use("/", (err, req, res, next) => {
 app.get("/hello", (req, res) => {
     res.send("Hello G. from /hello")
 })
-
+app.use(express.json());
 app.post("/signup", async (req, res) => {
     const userObj = {
         firstName: "Harsh",
@@ -59,13 +59,15 @@ app.post("/signup", async (req, res) => {
     }
     //creating a new instance
     // const user = new User(userObj);
-    const user = new User({
-        firstName: "Sachin",
-        lastName: "Tendulkar",
-        emailId: "virat@gmail.com",
-        password: "Harsh@80%",
-        _id: "666666634423225525533"
-    });
+    // const user = new User({
+    //     firstName: "Sachin",
+    //     lastName: "Tendulkar",
+    //     emailId: "virat@gmail.com",
+    //     password: "Harsh@80%",
+    //     _id: "666666634423225525533"
+    // });
+    console.log(req.body)
+    const user = new User(req.body);
     try {
         await user.save();
         res.send("User Added Successfully");
