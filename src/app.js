@@ -1,8 +1,12 @@
 const express = require("express");
 const connectDB = require("./config/database");
 var validator = require('validator');
+const { validateSignupData } = require("./utils/validation")
 const app = express();
 const User = require("./models/user")
+const bcrypt = require('bcrypt');
+
+
 app.get("/useriid", (req, res) => {
     console.log(req.query)
     res.send(
@@ -68,13 +72,17 @@ app.post("/signup", async (req, res) => {
     //     _id: "666666634423225525533"
     // });
     console.log(req.body)
-    const { emailId } = req.body
+    const { emailId, firstName, lastName, age, gender, skills } = req.body
     if (!req.body.lastName) {
         res.status(400).send("Please add last name");
         return;
     }
-    const user = new User(req.body);
     try {
+        const passwordHash = await bcrypt.hash(req.body.password, 2)
+        console.log(passwordHash)
+        const user = new User({
+            firstName, lastName, age, gender, skills, password: passwordHash, emailId
+        });
         await user.save();
         res.send("User Added Successfully");
     } catch (error) {
@@ -158,10 +166,10 @@ app.patch("/update-user/:id", async (req, res) => {
     const updateUserId = req.params.id
     const data = req.body;
     try {
-        if (!data) {
-            res.status(404).send("No data found....")
-        }
-        const allowedUpdates = ["age", "emailId", "password"]
+        // if (!data) {
+        //     res.status(404).send("No data found....")
+        // }
+        const allowedUpdates = ["age", "emailId", "password", "firstName"]
         const isUpdateAllowed = Object.keys(data).every((k) => {
             return allowedUpdates.includes(k)
         })
@@ -176,6 +184,7 @@ app.patch("/update-user/:id", async (req, res) => {
         //     res.status(400).send("Email is not valid...")
         //     return
         // }
+        validateSignupData(req);
         const updatedUserId = await User.findByIdAndUpdate(updateUserId, data, { returnDocument: "after", runValidators: true }) //after will return user after the update //default value is before.. //run schema validators in update as well.
         res.status(200).send(`User ${updatedUserId.firstName} updated successfully....`)
         console.log(updatedUserId.firstName)
