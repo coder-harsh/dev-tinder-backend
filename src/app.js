@@ -210,6 +210,25 @@ app.patch("/updat-user/:email", async (req, res) => {
         res.status(400).send("Something went wrong...")
     }
 })
+//login api
+app.post("/login", async (req, res) => {
+    const { emailId, password } = req.body;
+    try {
+        const user = await User.findOne({ emailId })
+        if (!user) {
+            throw new Error("Email not exist")
+        }
+        const isPasswordValid = await bcrypt.compare(password, user.password);
+        if (isPasswordValid) {
+            res.send("Login successfully")
+        }
+        else {
+            throw new Error("Password is incorrect..")
+        }
+    } catch (error) {
+        console.log(error)
+    }
+})
 connectDB().then(() => {
     console.log("Database connection established...")
     app.listen(7777, () => {
