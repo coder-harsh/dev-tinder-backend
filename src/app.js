@@ -5,8 +5,9 @@ const { validateSignupData } = require("./utils/validation")
 const app = express();
 const User = require("./models/user")
 const bcrypt = require('bcrypt');
-
-
+var cookieParser = require('cookie-parser')
+const jwt = require('jsonwebtoken')
+const { userAuth } = require("./middlewares/auth")
 app.get("/useriid", (req, res) => {
     console.log(req.query)
     res.send(
@@ -35,7 +36,7 @@ app.get("/use/:id", (req, res) => {
     )
 })
 const { adminauth } = require("./middlewares/auth")
-app.use("/admin", adminauth)
+// app.use("/admin", adminauth)
 app.get("/admin/getdata", (req, res, next) => {
     try {
         throw new Error("ghjdj")
@@ -55,6 +56,7 @@ app.get("/hello", (req, res) => {
     res.send("Hello G. from /hello")
 })
 app.use(express.json()); //change json to object
+app.use(cookieParser())
 app.post("/signup", async (req, res) => {
     const userObj = {
         firstName: "Harsh",
@@ -210,6 +212,30 @@ app.patch("/updat-user/:email", async (req, res) => {
         res.status(400).send("Something went wrong...")
     }
 })
+app.get("/profile", userAuth, async (req, res) => {
+    try {
+        // const cookies = req.cookies;
+        // const { token } = cookies
+        // if (!token) {
+        //     throw new Error("Invalid Token...")
+        // }
+        // //validate a token
+        // const decodedMsg = await jwt.verify(token, "dev@123321")
+        // console.log(decodedMsg)
+        // const { _id } = decodedMsg;
+        // console.log("LoggedIn user is:" + _id)
+        // const user = await User.findById(_id)
+        // if (!user) {
+        //     throw new Error("User does not exist...")
+        // }
+        // console.log(cookies);
+        const user = req.user;
+        res.send(user)
+    } catch (error) {
+        console.log(error)
+        res.status(400).send("Error: " + error.message)
+    }
+})
 //login api
 app.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
@@ -220,6 +246,11 @@ app.post("/login", async (req, res) => {
         }
         const isPasswordValid = await bcrypt.compare(password, user.password);
         if (isPasswordValid) {
+            const token = await jwt.sign({
+                _id: user._id
+            }, "dev@123321", { expiresIn: "1d" })
+            console.log(token)
+            res.cookie("token", token)
             res.send("Login successfully")
         }
         else {
@@ -228,6 +259,10 @@ app.post("/login", async (req, res) => {
     } catch (error) {
         console.log(error)
     }
+})
+app.post("/sentConnectionRequestion", userAuth, async (req, res) => {
+    const user = req.user
+    res.send(`Send connection request... by ${user.firstName}`)
 })
 connectDB().then(() => {
     console.log("Database connection established...")
