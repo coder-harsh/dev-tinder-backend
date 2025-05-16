@@ -6,7 +6,7 @@ const app = express();
 const User = require("./models/user")
 const bcrypt = require('bcrypt');
 var cookieParser = require('cookie-parser')
-const jwt = require('jsonwebtoken')
+// const jwt = require('jsonwebtoken')
 const { userAuth } = require("./middlewares/auth")
 app.get("/useriid", (req, res) => {
     console.log(req.query)
@@ -244,11 +244,13 @@ app.post("/login", async (req, res) => {
         if (!user) {
             throw new Error("Email not exist")
         }
-        const isPasswordValid = await bcrypt.compare(password, user.password);
+        // const isPasswordValid = await bcrypt.compare(password, user.password);
+        const isPasswordValid = await user.bycryptPS(password)
         if (isPasswordValid) {
-            const token = await jwt.sign({
-                _id: user._id
-            }, "dev@123321", { expiresIn: "1d" })
+            // const token = await jwt.sign({
+            //     _id: user._id
+            // }, "dev@123321", { expiresIn: "1d" })
+            const token = await user.getJWT();  //we offloaded the logic in schema methods
             console.log(token)
             res.cookie("token", token)
             res.send("Login successfully")
