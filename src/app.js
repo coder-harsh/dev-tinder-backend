@@ -1,22 +1,11 @@
 const express = require("express");
 const connectDB = require("./config/database");
-var validator = require('validator');
 const { validateSignupData } = require("./utils/validation")
 const app = express();
 const User = require("./models/user")
 const bcrypt = require('bcrypt');
 var cookieParser = require('cookie-parser')
-// const jwt = require('jsonwebtoken')
-const { userAuth } = require("./middlewares/auth")
-app.get("/useriid", (req, res) => {
-    console.log(req.query)
-    res.send(
-        {
-            firstName: "Harsh",
-            lastName: "Kumar"
-        }
-    )
-})
+
 app.get("/hi", (req, res, next) => {
     console.log("Handling the hi route")
     res.send("Say Hi")
@@ -26,71 +15,12 @@ app.get("/hi", (req, res, next) => {
     res.send("Second route handler") //will not execute as soon as it sends first response
     console.log("2nd response")
 })
-app.get("/use/:id", (req, res) => {
-    console.log(req.params.id)
-    res.send(
-        {
-            firstName: "Harsh",
-            lastName: "Kumar"
-        }
-    )
-})
-const { adminauth } = require("./middlewares/auth")
-// app.use("/admin", adminauth)
-app.get("/admin/getdata", (req, res, next) => {
-    try {
-        throw new Error("ghjdj")
-        res.send(
-            "Data successfully saved to backend.."
-        )
-    } catch (error) {
-        res.status(500).send("There is an error. Contact Support Team.....")
-    }
-})
-app.use("/", (err, req, res, next) => {
-    if (err) {
-        res.status(500).send("Something went wrong..")
-    }
-})
-app.get("/hello", (req, res) => {
-    res.send("Hello G. from /hello")
-})
 app.use(express.json()); //change json to object
 app.use(cookieParser())
-app.post("/signup", async (req, res) => {
-    const userObj = {
-        firstName: "Harsh",
-        lastName: "Kumar",
-        emailId: "harshj7.net@gmail.com",
-        password: "Harsh@80%"
-    }
-    //creating a new instance
-    // const user = new User(userObj);
-    // const user = new User({
-    //     firstName: "Sachin",
-    //     lastName: "Tendulkar",
-    //     emailId: "virat@gmail.com",
-    //     password: "Harsh@80%",
-    //     _id: "666666634423225525533"
-    // });
-    console.log(req.body)
-    const { emailId, firstName, lastName, age, gender, skills } = req.body
-    if (!req.body.lastName) {
-        res.status(400).send("Please add last name");
-        return;
-    }
-    try {
-        const passwordHash = await bcrypt.hash(req.body.password, 2)
-        console.log(passwordHash)
-        const user = new User({
-            firstName, lastName, age, gender, skills, password: passwordHash, emailId
-        });
-        await user.save();
-        res.send("User Added Successfully");
-    } catch (error) {
-        res.status(400).send("Error saving the user:" + error.message)
-    }
-})
+
+const authRouter = require("./routes/auth")
+const profileRouter = require("./routes/profile")
+const requestRouter = require("./routes/request")
 
 //get user by email
 app.get("/user", async (req, res) => {
@@ -212,6 +142,52 @@ app.patch("/updat-user/:email", async (req, res) => {
         res.status(400).send("Something went wrong...")
     }
 })
+
+app.use("/api/auth", authRouter)
+app.use("/api/profile", profileRouter)
+app.use("/api/request", requestRouter)
+
+
+
+
+/*
+// signup api
+app.post("/signup", async (req, res) => {
+    const userObj = {
+        firstName: "Harsh",
+        lastName: "Kumar",
+        emailId: "harshj7.net@gmail.com",
+        password: "Harsh@80%"
+    }
+    //creating a new instance
+    // const user = new User(userObj);
+    // const user = new User({
+    //     firstName: "Sachin",
+    //     lastName: "Tendulkar",
+    //     emailId: "virat@gmail.com",
+    //     password: "Harsh@80%",
+    //     _id: "666666634423225525533"
+    // });
+    console.log(req.body)
+    const { emailId, firstName, lastName, age, gender, skills } = req.body
+    if (!req.body.lastName) {
+        res.status(400).send("Please add last name");
+        return;
+    }
+    try {
+        const passwordHash = await bcrypt.hash(req.body.password, 2)
+        console.log(passwordHash)
+        const user = new User({
+            firstName, lastName, age, gender, skills, password: passwordHash, emailId
+        });
+        await user.save();
+        res.send("User Added Successfully");
+    } catch (error) {
+        res.status(400).send("Error saving the user:" + error.message)
+    }
+})
+
+profile api
 app.get("/profile", userAuth, async (req, res) => {
     try {
         // const cookies = req.cookies;
@@ -236,6 +212,7 @@ app.get("/profile", userAuth, async (req, res) => {
         res.status(400).send("Error: " + error.message)
     }
 })
+
 //login api
 app.post("/login", async (req, res) => {
     const { emailId, password } = req.body;
@@ -262,10 +239,16 @@ app.post("/login", async (req, res) => {
         console.log(error)
     }
 })
-app.post("/sentConnectionRequestion", userAuth, async (req, res) => {
-    const user = req.user
-    res.send(`Send connection request... by ${user.firstName}`)
+*/
+app.use("/", (req, res) => {
+    try {
+        res.send("api is working")
+    } catch (error) {
+        res.status(500).send(error)
+    }
 })
+
+
 connectDB().then(() => {
     console.log("Database connection established...")
     app.listen(7777, () => {
