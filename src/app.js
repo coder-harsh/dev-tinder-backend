@@ -242,7 +242,7 @@ app.post("/login", async (req, res) => {
 */
 app.use("/", (req, res) => {
     try {
-        res.send("api is working")
+        res.send("api is working....")
     } catch (error) {
         res.status(500).send(error)
     }

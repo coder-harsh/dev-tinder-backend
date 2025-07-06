@@ -14,7 +14,12 @@ const validateSignupData = (req) => {
         throw new Error("No data is there...")
     }
 }
+const validateEditProfileData = (req) => {
+    const allowedEditFields = ["firstName", "lastName", "emailId", "photoUrl", "age", "skills"]
+    const isEditAllowed = Object.keys(req.body).every(field => allowedEditFields.includes(field));
+    return isEditAllowed;
+}
 
 module.exports = {
-    validateSignupData
+    validateSignupData, validateEditProfileData
 }
